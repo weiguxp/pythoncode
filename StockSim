@@ -1,0 +1,16 @@
+import random, pylab
+
+def randomStockPrice(stockprice):
+	possibleChanges = [-0.01, +0.01, 0.02, -0.02, -0.03, 0.03]
+	return stockprice + random.choice(possibleChanges)
+
+
+priceList = []
+stock1 = 1
+
+for x in range(100):
+	stock1 = randomStockPrice(stock1)
+	priceList.append(stock1)
+
+pylab.plot(priceList)
+pylab.show()
