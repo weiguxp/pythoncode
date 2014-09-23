@@ -1,0 +1,46 @@
+import random, pylab
+
+class Particle(object):
+	def __init__ (self, x, y):
+		self.x = x
+		self.y = y
+	# def getX(self):
+	# 	return self.x
+	# def getY(self):
+	# 	return self.y
+	def move (self, dx,dy):
+		return Particle (self.x + dx, y = self.y + dy)
+
+	def __str__(self):
+		return '<' + str(self.x) + ', ' + str(self.y) + '>'
+	def calculateDistance(self):
+		return (self.x**2 + self.y**2)**0.5
+
+def simWalk(numSteps,numTrials):
+	#simulates a walk of numSteps
+	distances = []
+	for numsteps in range (numTrials):
+		bob = Particle(0,0)
+		for s in range(numSteps):
+			bob = walk(bob)
+		distances.append(bob.calculateDistance())
+	return distances
+
+
+def walk(object):
+	# walks in a random direction
+	xDist, yDist =  randomDirection()
+	object = object.move(xDist, yDist)
+	return object
+
+def randomDirection():
+	possibleSteps = [(0,1),(1,0),(0,-1), (-1,0)]
+	return random.choice(possibleSteps)
+
+def runSim():
+	distances = simWalk(100,100)
+	
+	pylab.plot([(1,9),(1,10)],'o')
+	pylab.show()
+
+runSim()
