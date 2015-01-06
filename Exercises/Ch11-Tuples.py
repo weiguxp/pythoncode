@@ -118,18 +118,32 @@ def IsRelativePrime(m,n):
 
 primep = 7229
 primeq = 9923
-RSAn = 71733367
-phin = 71716216
-e = 223459
-d = 1003
+RSAn = 86609
+phin = 86016
+e = 17
+d = 65777
 
+
+
+def CalcD():
+    for i in range (1, 100000):
+        if (i*e)%phin ==1:
+            print i
+            break
+
+print CalcD()
 
 def encrypt(n):
     return (n**e)%RSAn
 
-print encrypt(8)
-
 def decrypt(n):
     return (n**d)%RSAn
 
-print decrypt(35316773)
+def TestRSA():
+    message = 18537
+    encryM = encrypt(message)
+    decryM =  decrypt(encryM)
+    print 'testing message = ', message, 'encrypted to ', encryM, 'decrypted to ', decryM
+
+
+TestRSA()
