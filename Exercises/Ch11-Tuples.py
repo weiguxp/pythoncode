@@ -1,7 +1,8 @@
 import math
 
 myString = 'hello world this is wei!'
-myDict = histogram(myString)
+fibDict = dict()
+fibDict = {0:0, 1:1}
 
 def SumAll(*args):
 	'''Sums any number of arguments'''
@@ -46,5 +47,34 @@ def InvertDict(d):
 
 	return revDict
 
-def Fibonacci
+def Fibonacci(n):
+	if n in fibDict:
+		return fibDict[n]
+	res = Fibonacci(n-1) + Fibonacci(n-2)
+	fibDict[n] = res
+	return res 
 
+
+ackCount = {}
+myCounter = 0
+
+def Ack(m,n):
+	# global myCounter
+	# myCounter += 1
+
+	if (m, n) in ackCount:
+		print 'found'
+		return ackCount[m,n]
+	if m == 0:
+		ackCount[m,n] = n+1
+	if n==0 and m>0:
+		ackCount[m,n] = Ack(m-1, 1)
+	if m>0 and n>0:
+		ackCount[m,n] = Ack(m-1, Ack(m,n-1))
+	return ackCount[m,n]
+
+
+Ack(3,3)
+
+
+print ackCount
