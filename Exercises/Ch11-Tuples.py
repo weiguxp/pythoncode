@@ -116,19 +116,20 @@ def IsRelativePrime(m,n):
             return False
     return True
 
-primep = 3
-primeq = 11
-RSAn = 33
-phin = 20
-e = 7
-d = 3
-
+primep = 7229
+primeq = 9923
+RSAn = 71733367
+phin = 71716216
+e = 223459
+d = 1003
 
 
 def encrypt(n):
     return (n**e)%RSAn
 
-print encrypt(2)
+print encrypt(8)
 
+def decrypt(n):
+    return (n**d)%RSAn
 
-
+print decrypt(35316773)
