@@ -111,10 +111,6 @@ def RecurReduceable(word):
             return True
     return False
 
-
-
-
-
 def BuildmyLenDict():
     for word in myFullList:
         wordLength = len(word)
@@ -147,13 +143,17 @@ def BuildReducableWords2():
     
 myRedDict2 = {}
 
-t1 = time.time()
-BuildReducableWords()
-t2 = time.time()
-BuildReducableWords2()
-t3 = time.time()
+def CompareMemoRecursion():
+    t1 = time.time()
+    BuildReducableWords()
+    t2 = time.time()
+    BuildReducableWords2()
+    t3 = time.time()
+    m1time = t2 - t1
+    m2time = t3 - t2
+    print 'building method time =', m1time ,'found=', len(myRedDict), 'recursion method time =', m2time , 'found =', len(myRedDict2)
+    fout = open('output.txt', 'w')
+    for element in myRedDict:
+        fout.write(element + "\n")
 
-m1time = t2 - t1
-m2time = t3 - t2
-
-print 'building method time =', m1time ,'found=', len(myRedDict), 'recursion method time =', m2time , 'found =', len(myRedDict2)
+CompareMemoRecursion()
