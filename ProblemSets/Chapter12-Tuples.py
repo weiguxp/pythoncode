@@ -1,10 +1,13 @@
 from structshape import structshape
 from ParseFile import *
 import math
+import time
 
 myList = ParsePartF('words.txt',10000)
 myFullList = ParseF('words.txt')
 myDict = {}
+myLenDict = {}
+myRedDict = {}
 
 for word in myFullList:
     myDict[word] = 1
@@ -77,8 +80,13 @@ def FindMetaPair():
                 if word1 < word2 and NumSwaps(word1, word2) == 2:
                     print word1, word2
  
-def CheckInDict(word):
-    if word in myDict:
+def CheckInDict(word, *args):
+    if args:
+        target = args[0]
+    else:
+        target = myDict
+
+    if word in target:
         return True
     return False
 
@@ -92,21 +100,60 @@ def ReduceWord(word):
     return myList
 
 
-def IsReducable(word):
+def RecurReduceable(word):
     if len(word) ==1:
         return True
     rWords = ReduceWord(word)
     if not rWords:
         return False
     for arWord in rWords:
-        if IsReducable(arWord) == True:
+        if RecurReduceable(arWord) == True:
             return True
     return False
 
 
-def test1():
-    for word in myList:
-        if IsReducable(word)== True:
-            print word
 
-test1()
+
+
+def BuildmyLenDict():
+    for word in myFullList:
+        wordLength = len(word)
+        try:
+            myLenDict[wordLength] += [word]
+        except KeyError:
+            myLenDict[wordLength] = [word]
+
+
+def BuildReducableWords():
+    BuildmyLenDict()
+
+    for word in myLenDict[1]:
+        myRedDict[word] = 1
+
+
+    for i in range (2,18):
+        for word in myLenDict[i]:
+            # print 'searching word', word,
+            for redWord in ReduceWord(word):
+                # print redWord
+                if CheckInDict(redWord, myRedDict) == True:
+                    # print 'adding', word
+                    myRedDict[word] = 1
+
+def BuildReducableWords2():
+    for word in myFullList:
+        if RecurReduceable(word)== True:
+            myRedDict2[word] = 1
+    
+myRedDict2 = {}
+
+t1 = time.time()
+BuildReducableWords()
+t2 = time.time()
+BuildReducableWords2()
+t3 = time.time()
+
+m1time = t2 - t1
+m2time = t3 - t2
+
+print 'building method time =', m1time ,'found=', len(myRedDict), 'recursion method time =', m2time , 'found =', len(myRedDict2)
