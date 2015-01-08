@@ -3,7 +3,7 @@ from ParserWei import *
 from DailyRecord import *
 
 
-def ParseFileToDailyRecords(myFile):
+def ParseIncomeFile(myFile):
     ''' 
     Returns a List of Records using contents of myFile
     '''
@@ -17,15 +17,17 @@ def ParseFileToDailyRecords(myFile):
 def ParseLineAsRecord(stringS):
     lineS = stringS.strip()
     lineS = BreakSeparator(lineS, ',')  
-    dateStr, MAU, WAU, DAU = lineS
+    dateStr, incomeS = lineS
     dateDate = ParseDate(dateStr)
     recordS = DailyRecord(dateDate)
-    recordS.MAU=int(MAU)
-    recordS.WAU=int(WAU) 
-    recordS.DAU=int(DAU)
-    recordS.MAUData = True
+    recordS.IncomeData = True
 
+    if incomeS == '-':
+        incomeS = 0.0
+
+    recordS.income = float(incomeS)
+
+    
     return recordS
-
 
 
