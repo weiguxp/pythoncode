@@ -140,7 +140,7 @@ def decrypt(n):
     return (n**d)%RSAn
 
 def TestRSA():
-    message = 18537
+    message = 235234234
     encryM = encrypt(message)
     decryM =  decrypt(encryM)
     print 'testing message = ', message, 'encrypted to ', encryM, 'decrypted to ', decryM
