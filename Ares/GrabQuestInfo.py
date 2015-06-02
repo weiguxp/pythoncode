@@ -27,7 +27,7 @@ def FindStr(worksheets, trgRow, mystr):
 def GrabXlsData(bookname):
 	#opens the file bookname and grabs data from the first sheet
 	#returns a list with the files
-
+	rList = []
 	readworkbook = xlrd.open_workbook(bookname)
 	worksheet = readworkbook.sheet_by_index(0)
 
@@ -42,7 +42,29 @@ def GrabXlsData(bookname):
 	addexp = worksheet.cell((FindStr(worksheet, 2, 'Exp')), 3).value 
 	addmoney = worksheet.cell((FindStr(worksheet, 2, 'Money')), 3).value 
 
-	return questname, displayname, minlevel, questdesc, actiontype, actiontext, stagenumber, addexp, addmoney
+
+	convoList = []
+	convo = []
+	chatStart = FindStr(worksheet, 1, 'questChatList') +2
+	convoRow= 0
+	while worksheet.cell(chatStart + convoRow, 1).value != "":
+
+		selectRow = chatStart + convoRow
+		qId = worksheet.cell(selectRow, 1).value 
+		qobjectType = worksheet.cell(selectRow, 2).value 
+		qidentify = worksheet.cell(selectRow, 3).value 
+		qanimation = worksheet.cell(selectRow, 4).value 
+		qChat = worksheet.cell(selectRow, 5).value 
+
+		convo = qId, qobjectType, qidentify, qanimation, qChat
+		convoList += convo
+		convoRow += 1 
+
+	print convoList
+
+
+	rList = questname, displayname, minlevel, questdesc, actiontype, actiontext, stagenumber, addexp, addmoney, convoList
+	return rList
 
 
 files = glob.glob("*.xlsx")
@@ -58,11 +80,18 @@ for j in range (9):
 	ws.write(0 , j, title[j])
 
 
+# start writing stuff 
+
+selectRow = 1
 for i in range (len(files)):
 	dumpedData = GrabXlsData(files[i])
 	print dumpedData
-	for j in range (9):
-		ws.write(i + 1 , j, dumpedData[j])
+	for j in range (len(dumpedData)-1):
+		ws.write(selectRow, j, dumpedData[j])
+	convoList = dumpedData[9]
+	print 'length ' , len(convoList)
+	print convoList
+	selectRow += 1
 
 
 
