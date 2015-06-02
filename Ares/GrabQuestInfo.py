@@ -5,16 +5,18 @@ import glob
 
 from datetime import datetime
 
-files = glob.glob("*.xlsx")
 
-
-def FilterStage(stagedump):
-	if 'Stage' in stagedump:
+def FilterForWord(stagedump, findword):
+	#Finds findword and returns stagedump, else returns empty string
+	if findword in stagedump:
 		return stagedump
 	else:
 		return ' '
 
 def FindStr(worksheets, trgRow, mystr):
+	#Finds a string in the target row of a worksheet. 
+	# Returns a Row number if found 
+	#returns 0 if row not found
 	num_rows = worksheets.nrows
 	for i in range(num_rows):
 		if worksheets.cell(i, trgRow).value == mystr:	
@@ -23,6 +25,9 @@ def FindStr(worksheets, trgRow, mystr):
 
 
 def GrabXlsData(bookname):
+	#opens the file bookname and grabs data from the first sheet
+	#returns a list with the files
+
 	readworkbook = xlrd.open_workbook(bookname)
 	worksheet = readworkbook.sheet_by_index(0)
 
@@ -33,28 +38,18 @@ def GrabXlsData(bookname):
 	actiontype = worksheet.cell(26, 10).value
 	actiontext = worksheet.cell(26, 11).value
 	stagedump = worksheet.cell(26, 4).value
-	stagenumber = FilterStage(str(stagedump))
+	stagenumber = FilterForWord(str(stagedump), 'Stage')
 	addexp = worksheet.cell((FindStr(worksheet, 2, 'Exp')), 3).value 
 	addmoney = worksheet.cell((FindStr(worksheet, 2, 'Money')), 3).value 
 
 	return questname, displayname, minlevel, questdesc, actiontype, actiontext, stagenumber, addexp, addmoney
 
 
-
-
-def GenBookName(booknum):
-	if booknum < 10:
-		return 'Act01Main00' + str(booknum) + '.xlsx'
-	else:
-		return 'Act01Main0' + str(booknum) + '.xlsx'
-
+files = glob.glob("*.xlsx")
 
 
 wb = xlwt.Workbook()
 ws = wb.add_sheet('A Test Sheet')
-style0 = xlwt.easyxf('font: name Times New Roman, color-index red, bold on',
-    num_format_str='#,##0.00')
-style1 = xlwt.easyxf(num_format_str='D-MMM-YY')
 
 
 #write title
@@ -63,7 +58,7 @@ for j in range (9):
 	ws.write(0 , j, title[j])
 
 
-for i in range (207):
+for i in range (len(files)):
 	dumpedData = GrabXlsData(files[i])
 	print dumpedData
 	for j in range (9):
@@ -72,5 +67,5 @@ for i in range (207):
 
 
 
-
+#Saves the workbook as questdump
 wb.save('QuestDump.xls')
