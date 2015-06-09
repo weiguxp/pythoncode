@@ -57,7 +57,7 @@ def GrabXlsData(bookname):
 		qChat = worksheet.cell(selectRow, 5).value 
 
 		convo = qId, qobjectType, qidentify, qanimation, qChat
-		convoList += convo
+		convoList += [convo]
 		convoRow += 1 
 
 	print convoList
@@ -88,7 +88,17 @@ for i in range (len(files)):
 	print dumpedData
 	for j in range (len(dumpedData)-1):
 		ws.write(selectRow, j, dumpedData[j])
+
 	convoList = dumpedData[9]
+	print convoList
+
+	for i in range (len(convoList)):
+
+		selectRow += 1
+		convo = convoList[i]
+		for j in range(len(convo)):
+			ws.write(selectRow, j, convo[j])
+
 	print 'length ' , len(convoList)
 	print convoList
 	selectRow += 1
