@@ -10,7 +10,7 @@ include 'connectmysql.php' ;
 $query = "SELECT * FROM myKeys
 		WHERE key_region = 'Asia'
 		AND key_isused = 0
-		LIMIT 0, 30
+		LIMIT 0, 5
 		";
 $result = mysql_query($query) or die('Query failed: ' . mysql_error());
 
@@ -37,31 +37,33 @@ mysql_close($link);
 
 <table border="1">
   <tr>
-    <td align="center">Form Input Employees Data</td>
+    <td align="center">Query Beta Key System</td>
   </tr>
   <tr>
     <td>
       <table>
-        <form method="post" action="input.php">
+        <form method="post" action="querykey.php">
         <tr>
-          <td>Key</td>
-          <td><input type="text" name="inputKey" size="20" id ="inputKey">
+          <td>Keys</td>
+          <td>
+
+          <select type="number" name ="select_limit" id="select_limit">
+          	<option value="5">5</option>
+          	<option value="10">10</option>
+          	<option value="15">10</option>
+          </select>
+
           </td>
         </tr>
         <tr>
           <td>Region</td>
           <td>
 
-          <select type="text" name ="inputRegion" id="inputRegion">
+          <select type="text" name ="key_region" id="key_region">
           	<option value="Asia">Asia</option>
           	<option value="China">China</option>
           </select>
           </td>
-        </tr>
-        <tr>
-        	<td> Used </td>
-        	<td><input type="text" name="used" sized = "1" id="used">
-        	</td>
         </tr>
        	<tr>
           <td></td>
