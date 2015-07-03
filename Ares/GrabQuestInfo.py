@@ -89,18 +89,18 @@ for i in range (len(files)):
 	for j in range (len(dumpedData)-1):
 		ws.write(selectRow, j, dumpedData[j])
 
-	convoList = dumpedData[9]
-	print convoList
+	# convoList = dumpedData[9]
+	# print convoList
 
-	for i in range (len(convoList)):
+	# for i in range (len(convoList)):
 
-		selectRow += 1
-		convo = convoList[i]
-		for j in range(len(convo)):
-			ws.write(selectRow, j, convo[j])
+	# 	selectRow += 1
+	# 	convo = convoList[i]
+	# 	for j in range(len(convo)):
+	# 		ws.write(selectRow, j, convo[j])
 
-	print 'length ' , len(convoList)
-	print convoList
+	# print 'length ' , len(convoList)
+	# print convoList
 	selectRow += 1
 
 
