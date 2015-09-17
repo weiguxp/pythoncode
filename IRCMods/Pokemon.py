@@ -3,6 +3,25 @@ import time
 from sopel.module import commands, priority
 
 
+
+
+
+@commands('createpokemon')
+def createpokemon(bot, trigger):
+	myPokemon = Pokemon(trigger.group(2), 100, bot)
+	bot.say(str(myPokemon))
+	myPokemon.takeDamage(50)
+
+
+
+def RollDice2(numDice, numHeads, bot):
+	diceSum = 0
+	for i in range (numDice):
+		diceSum += random.randint(1,numHeads)
+	bot.say ('[DiceRoll] I rolled %g D %g , result is %g' % (numDice, numHeads, diceSum))
+	return diceSum
+
+
 def RollDice(numDice, numHeads, verbose = 0):
 	diceSum = 0
 	for i in range (numDice):
@@ -13,16 +32,17 @@ def RollDice(numDice, numHeads, verbose = 0):
 
 
 class Pokemon(object):
-	def __init__(self, pokename, initiative):
+	def __init__(self, pokename, initiative, bot):
 		self.level = 1
 		self.pokename = str(pokename)
 		self.initiative = float(initiative)
 		print 'Deciding the starting HP via DiceRoll (6D16)'
-		self.maxhp = RollDice(6,16, 1)
+		self.maxhp = RollDice2(6,16, bot)
 		self.hp = self.maxhp
 		self.xp = 0
 		self.nextLvlXP = 500
 		self.weapon = 2,12
+		self.bot = bot
 		print self
 
 	def updateHP(self):
@@ -46,6 +66,7 @@ class Pokemon(object):
 	def takeDamage(self, damage):
 		self.hp -= damage
 		print '%s took %g damage (Hp:%g/%g)' % (self.pokename, damage, self.hp, self.maxhp)
+		self.bot.say ('i took some damage')
 		if self.hp < 0:
 			print '%s has died' % self.pokename
 
@@ -76,17 +97,16 @@ def PokeBattle(poke1, poke2):
 
 	print deadPokemon 
 
+# myPokemon = Pokemon('Skibear', 100)
 
-myPokemon = Pokemon('Skibear', 100)
+# evilPokemon = Pokemon('Evil Skibear', 100)
 
-evilPokemon = Pokemon('Evil Skibear', 100)
+# evilPokemon = Pokemon('Kobold', 100)
 
-evilPokemon = Pokemon('Kobold', 100)
-
-mytime = time.time()
-
+# mytime = time.time()
 
 
-PokeBattle(myPokemon, evilPokemon)
 
-print time.time() - mytime
+# PokeBattle(myPokemon, evilPokemon)
+
+# print time.time() - mytime
