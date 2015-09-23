@@ -2,116 +2,105 @@ import random
 import time
 from sopel.module import commands, priority
 
-# These are the commands for this game
-
 @commands('startgame')
 def startgame(bot, trigger):
-	# This starts the game. 
 	if 'pokedex' in globals():
 		bot.say('game has already been started')
 	else:
 		global pokedex
 		pokedex = dict()
-		bot.say ('DovantorrPokemon v0.2: Gotta catch them all!! type .pokehelp for commands')
+		bot.say ('gotta catch them all')
 		global myBot
 		myBot = bot
-
-@commands('pokehelp')
-def pokehelp(bot, trigger):
-	bot.say ('Available commands are .poke .create .feed .evolve .fight .enemy')
 
 @commands('create')
 def createpokemon(bot, trigger):
 	if trigger.nick in pokedex:
 		bot.say('You already have a pokemon!' )
 	else:
-		newPokemon = Pokemon(trigger.group(2), 100, bot)
-		pokedex[trigger.nick] = newPokemon
+		myPokemon = Pokemon(trigger.group(2), 100, bot)
+		pokedex[trigger.nick] = myPokemon
+
 		bot.say(str(pokedex[trigger.nick]))
 
 @commands('feed')
 def feedpokemon(bot, trigger):
-	if pokedex[trigger.nick].hp < 0 :
-		myBot.say('Sorry %s is dead and no longer wants to eat' % pokedex[trigger.nick].pokename)
+	if myPokemon.hp < 0 :
+		myBot.say('Sorry %s is dead and no longer wants to eat' % myPokemon.pokename)
 	else:
-		lastfed = int( time.time() - pokedex[trigger.nick].time )
+		lastfed = int( time.time() - myPokemon.time )
 		if lastfed < 100:
 			myBot.say('Im not hungry(last fed %s seconds ago)' % str(lastfed))
 		else:
 			foodType = [('peanut', 25), ('Roach', -10), ('Mana Biscuit', 50), ('Lobster', 100), ('Grass', 5), ('Soup', 150)]
 			fruit, gainHP = foodType[random.randint(0, len(foodType)-1)]
-			bot.say ('You fed %s a %s. Gains %g HP' % (pokedex[trigger.nick].pokename, fruit, gainHP))
-			pokedex[trigger.nick].addXP(gainHP/10)
-			pokedex[trigger.nick].heal(gainHP)
-			pokedex[trigger.nick].time = time.time()
+			bot.say ('You fed %s a %s. Gains %g HP' % (myPokemon.pokename, fruit, gainHP))
+			myPokemon.addXP(gainHP/10)
+			myPokemon.heal(gainHP)
+			myPokemon.time = time.time()
 
 @commands('revive')
 def reviveP(bot, trigger):
-	if pokedex[trigger.nick].hp > 0:
+	if myPokemon.hp > 0:
 		myBot.say ('%s is not dead and doesnt need reviving')
 	else:
 		minRevivetime = 300
-		if time.time() - pokedex[trigger.nick].time < minRevivetime:
-			revivetime = int(minRevivetime - (time.time() - pokedex[trigger.nick].time))
+		if time.time() - myPokemon.time < minRevivetime:
+			revivetime = int(minRevivetime - (time.time() - myPokemon.time))
 			myBot.say ('you still need to wait %g seconds before reviving' % revivetime)
 		else:
-			myBot.say ('%s, you have successfully revived %s' % (trigger.nick , pokedex[trigger.nick].pokename))
-			pokedex[trigger.nick].hp = pokedex[trigger.nick].maxhp
+			myBot.say ('%s, you have successfully revived %s' % (trigger.nick , myPokemon.pokename))
+			myPokemon.hp = myPokemon.maxhp
 
 @commands('poke')
 def poke(bot, trigger):
-	bot.say(str(pokedex[trigger.nick]))
+	bot.say(str(myPokemon))
 
 @commands('enemy')
 def cEnemy(bot, trigger):
-	global evilPokemon
+	global enemyPokemon
 	enemyName = trigger.nick + GenSuffix()
-	evilPokemon = Pokemon(enemyName, 100, bot)
-	myBot.say('Hard Mode Activated + 10000 hp')
-	evilPokemon.hp += 100000
-	myBot.say(str(evilPokemon))
+	enemyPokemon = Pokemon(enemyName, 100, bot)
+	myBot.say(str(enemyPokemon))
 
 @commands('fight')
 def fightp(bot, trigger):
-	if pokedex[trigger.nick].hp < 1:
-		bot.say('sorry your pokemon is dead. please revive him with .revive')
-	else:
-		if trigger.group(2) in pokedex:
-			if pokedex[trigger.group(2)].hp < 1:
-				bot.say('your target pokemon is dead.')
-			else:
-				PokeBattle(pokedex[trigger.nick], pokedex[trigger.group(2)])
+
+	
+	if 'enemyPokemon' in globals():
+		myBot.say ('%s (%s Damage) will now battle %s (%s Damage)' % (myPokemon.pokename, str(myPokemon.getDamage()), enemyPokemon.pokename, str(enemyPokemon.getDamage())))
+		if enemyPokemon.hp > 0:
+			PokeBattle(myPokemon, enemyPokemon)
 		else:
-			if 'evilPokemon' in globals():
-				if evilPokemon.hp > 0:
-					PokeBattle(pokedex[trigger.nick], evilPokemon)
-				else:
-					myBot.say('You cant fight dead pokemon (create a new one with .enemy)')
-			else:
-				myBot.say('Currently no enemy, create one with .enemy')
+			myBot.say('You cant fight dead pokemon (create a new one with .enemy)')
+	else:
+		myBot.say('Currently no enemy, create one with .enemy')
 
 @commands('evolve')
 def evolvepoke(bot, trigger):
 	myBot.say('[warning]evolve will consume 1 level from the active pokemon. To successfully evolve, roll 2D6 with 6 or higher roll')
-	if pokedex[trigger.nick].level > 4 :
-		if RollDice(2,6,1) > 5:
+	if myPokemon.level > 4 :
+		if RollDice(2,6,1) > 6:
 			myBot.say('Evolution Complete! check out the new stats with .poke')
-			damageDice, damageRoll = pokedex[trigger.nick].weapon
+			myPokemon.level -= 1
+			damageDice, damageRoll = myPokemon.weapon
 			damageRoll += RollDice(1,5)
-			pokedex[trigger.nick].weapon = damageDice, damageRoll
-			pokedex[trigger.nick].pokename = pokedex[trigger.nick].pokename + GenSuffix()
-			pokedex[trigger.nick].nextLvlXP = RollDice(10,100)
+			myPokemon.weapon = damageDice, damageRoll
+			myPokemon.pokename = myPokemon.pokename + GenSuffix()
+			myPokemon.nextLvlXP = RollDice(10,100)
 		else:
-			myBot.say ('Evolution Failed, %s lost a level' % pokedex[trigger.nick].pokename)
-			pokedex[trigger.nick].level -= 1
+			myBot.say ('Evolution Failed, %s lost a level' % myPokemon.pokename)
+			myPokemon.level -= 1
 	else: 
-		myBot.say ('%s Needs to be at least level 5 before evolving' % pokedex[trigger.nick].pokename)
+		myBot.say ('%s Needs to be at least level 5 before evolving' % myPokemon.pokename)
 
 @commands('cheat')
 def cheatcode(bot, trigger):
-	pokedex[trigger.nick].addXP(500)
+	myPokemon.addXP(500)
 
-
+@commands('pokehelp')
+def pokehelp(bot, trigger):
+	bot.say ('Available commands are .poke .create .feed .evolve .fight .enemy')
 
 
 
@@ -136,8 +125,6 @@ class Pokemon(object):
 		self.nextLvlXP = 500
 		self.weapon = 2,12
 		self.time = time.time() - 600
-		self.block = 0
-		self.crit = 0 
 		print self
 
 	def updateHP(self):
@@ -161,12 +148,8 @@ class Pokemon(object):
 		return '[%s]Hi!. My name is %s, I am a level %g pokemon. (HP:%g/%g) (XP:%g /%g)' % (self.pokename, self.pokename, self.level, self.hp, self.maxhp, self.xp, self.nextLvlXP)
 
 	def takeDamage(self, damage):
-		tdamage = damage - self.block
-		if tdamage < 0:
-			tdamage = 0
-		
-		self.hp -= tdamage
-		myBot.say ( '%s took %g damage (%g Blocked) (Hp:%g/%g)' % (self.pokename, damage, self.block, self.hp, self.maxhp))
+		self.hp -= damage
+		myBot.say ( '%s took %g damage (Hp:%g/%g)' % (self.pokename, damage, self.hp, self.maxhp))
 		if self.hp < 0:
 			print '%s has died' % self.pokename
 
@@ -189,11 +172,11 @@ class Pokemon(object):
 
 
 def PokeBattle(poke1, poke2):
-	myBot.say ('%s (%s Damage) will now battle %s (%s Damage)' % (poke1.pokename, str(poke1.getDamage()), poke2.pokename, str(poke2.getDamage())))
+
 	while poke1.hp > -1 and poke2.hp > -1:
 		damage = poke1.attack()
 		poke2.takeDamage(damage)
-		if poke2.hp < 1:
+		if poke2.hp < 0:
 			deadPokemon = poke2
 			myBot.say ('Tango Down!')
 			poke1.addXP(random.randint(200,450))
@@ -203,7 +186,7 @@ def PokeBattle(poke1, poke2):
 
 		damage = poke2.attack()
 		poke1.takeDamage(damage)
-		if poke1.hp <1:
+		if poke1.hp <0:
 			deadPokemon = poke1
 			break
 		time.sleep(1)
