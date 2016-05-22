@@ -3,6 +3,7 @@ from HTMLParser import HTMLParser
 import smtplib
 from sparkpost import SparkPost
 import time
+from datetime import datetime
 
 sp = SparkPost('a0c04366cd1a5e02ac31f62e6ff4e9aa105afc2c')
 
@@ -19,6 +20,7 @@ def getReport(targetURL, numRetry = 0):
 					totalUp += 1
 			return totalUp
 		except:
+			print 'retrying %s' %targetURL
 			getReport(targetURL, numRetry + 1)
 	else:
 		return 0
@@ -44,7 +46,7 @@ def monitorServers():
 
 
 while 1 != 0 :
-	print 'starting cycle'
+	print 'starting cycle %s ' %str(datetime.now())
 	monitorServers()
 	time.sleep(300)
 
