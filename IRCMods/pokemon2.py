@@ -2,6 +2,7 @@ import random
 import time
 from sopel.module import commands, priority
 import sopel
+import pickle
 
 # These are the commands for this game
 
@@ -21,6 +22,15 @@ def GetBuildNumber():
 	buildsave.write(str(buildnum))
 	buildsave.close()
 	return buildnum
+
+@commands('savegame')
+def savegame(bot, trigger):
+	SaveGame()
+
+
+@commands('loadgame')
+def loadgame(bot,trigger):
+	LoadGame()
 
 
 @commands('startgame')
@@ -49,6 +59,7 @@ def createpokemon(bot, trigger):
 		BotBlueMsg('[PROF. OAK] Welcome to the world of Pokemon. Wild Pokemon live in the tall grass, take this Pokemon for your protection! [DiceRoll (6D16)]')
 		newPokemon = Pokemon(trigger.group(2), RollDice(6,16,1))
 		pokedex[trigger.nick] = newPokemon
+		pokedex[trigger.nick].owner = trigger.nick
 		bot.say(str(pokedex[trigger.nick]))
 
 
@@ -122,7 +133,6 @@ def cEnemy(bot, trigger):
 	#Creates a global variable called evil Pokemon
 	if 'evilPokemon' in globals() == False: global evilPokemon
 
-
 	try:
 		if evilPokemon.hp > 0:
 			BotErrMsg('%s is preventing you from exploring' %evilPokemon.pokename)
@@ -130,49 +140,23 @@ def cEnemy(bot, trigger):
 	except Exception:
 		hello = 1
 
-	enemyName = GenPokeName()
+	
 	BotBlueMsg('A wild Pokemon has appeared!')
 	try:	genEnemyLevel = random.randint(1, pokedex[trigger.nick].level+3) 
 	except KeyError: genEnemyLevel = 1
+	evilPokemon = WildPokemon1(genEnemyLevel)
 
-	evilPokemon = NPCPokemon(enemyName, RollDice(3,(35+genEnemyLevel)))
-	evilPokemon.isNPC = True
-	evilPokemon.weapon = 2, random.randint(1,15+(evilPokemon.level))
-	evilPokemon.level = genEnemyLevel
-
-	if random.randint(0,100) < 80:
-		evilPokemon.crit = random.randint(2,30)
-		evilPokemon.killxp += 50
-	if random.randint(0,100) < 20:
-		evilPokemon.block = random.randint(2,10)
-		evilPokemon.killxp += 115
-	if random.randint(0,100) < 20:
-		evilPokemon.evade = random.randint(20,65)
-		evilPokemon.killxp += 300
-	if random.randint(0,100) < 15:
-		evilPokemon.dunkmaster = random.randint(20,70)
-		evilPokemon.pokename = '[Dunkmaster]' + evilPokemon.pokename
-		evilPokemon.killxp += 200
-	if random.randint(0,100) < 20:
-		evilPokemon.leechseed = random.randint(20,70)
-		evilPokemon.pokename = '[Leechseed]' + evilPokemon.pokename
-		evilPokemon.killxp += 100
 	bot.say(str(evilPokemon))
 
 @commands('explorewilds')
 def cEnemy2(bot, trigger):
 	if pokedex[trigger.nick].level > 15:
-		global evilPokemon
-		enemyName = '[Dragon]' + trigger.nick + 'saur'
 		BotBlueMsg('You explore the tall grass.... A wild [Dragon] Pokemon has appeared!')
-		evilPokemon = NPCPokemon(enemyName, RollDice(12,36))
-		evilPokemon.weapon = 3,20
-		evilPokemon.crit = RollDice(1,30)
-		evilPokemon.block = RollDice(1,12)
-		evilPokemon.evade = RollDice(1,12)
-		evilPokemon.level = RollDice(15,30)
-		evilPokemon.isNPC = True
+		global evilPokemon
+		enemyLevel = RollDice(15,30)
+		evilPokemon = DragonPokemon(enemyLevel)
 		bot.say(str(evilPokemon))
+
 	else:
 		BotErrMsg('You must be level 15 before exploring the wilds')
 
@@ -182,19 +166,13 @@ def cEnemy2(bot, trigger):
 # 	pokedex[trigger.nick].AddXP(1000)
 
 
-def RollDice(numDice, numHeads, verbose = 0):
-	diceSum = 0
-	for i in range (numDice):
-		diceSum += random.randint(1,numHeads)
-	if verbose == 1:
-		myBot.say ( sopel.formatting.color('[DICE(%gD%g)] I rolled %g' % (numDice, numHeads, diceSum), '02'))
-	return diceSum
 
 
 #################################################  This is the Pokemon Class, Defines what it is to be a Pokemon #########################################################
 
 class Pokemon(object):
 	def __init__(self, pokename, hp):
+		self.owner = 'wild'
 		self.level = 1
 		self.pokename = str(pokename)
 		self.maxhp = hp
@@ -204,7 +182,10 @@ class Pokemon(object):
 		self.nextEvolve = 4
 		self.perks = 3
 		self.isNPC = False
-		self.killxp = random.randint(200,400)
+		self.killxp = 0
+		self.slainby = 'wild'
+		self.fighting = []
+		self.deathTriggered = False
 
 		#Battle information
 		self.weapon = 2,12
@@ -222,7 +203,7 @@ class Pokemon(object):
 
 	def AddXP(self, addXP):
 		self.xp += addXP
-		myBot.say ('%s has gained %g XP (%g/%g)' % (self.pokename, addXP, self.xp, self.nextLvlXP))
+		# myBot.say ('%s has gained %g XP (%g/%g)' % (self.pokename, addXP, self.xp, self.nextLvlXP))
 		if self.xp > self.nextLvlXP:
 			self.xp -= self.nextLvlXP
 			self.nextLvlXP += 90
@@ -240,8 +221,6 @@ class Pokemon(object):
 		if self.perks > 0:
 			myMsg += '. You have %g Available perks, type .perk to distribute' %self.perks
 		return myMsg
-
-
 
 
 	def Heal(self, Healamount):
@@ -266,29 +245,78 @@ class Pokemon(object):
 	def AttackTurn2(self, myBlog):
 		if self.leechseed > random.randint(1,100):
 			self.hp += myBlog.damageTaken
-			BotBlueMsg('%s Used Leechseed and healed %g' % (self.pokename, damage))
+			BotBlueMsg('%s Used Leechseed and healed %g' % (self.pokename, myBlog.damageTaken))
 
 	def TakeDamage(self, myBlog):
+		if self.hp > 0:
+			#Adds the attacker into self.fighting
+			if myBlog.attackerOwner != 'wild' and myBlog.attackerOwner not in self.fighting:
+				self.fighting.append(myBlog.attackerOwner)
 
-		#Check if Evade
-		if self.evade > RollDice(1,100):
-			myBot.say('%s Evaded the attack' % self.pokename)
-			myBlog.log = 'Evaded'
-			myBlog.damageTaken = 0
-			return myBlog
+			#Check if Evade
+			if self.evade > RollDice(1,100):
+				# myBot.say('%s Evaded the attack' % self.pokename)
+				myBlog.log = 'Evaded'
+				myBlog.damageTaken = 0
+				return myBlog
 
-		#Do a block!
-		tdamage = myBlog.toDealDamage - self.block
-		if tdamage < 0:
-			tdamage = 0
+			#Do a block!
+			tdamage = myBlog.toDealDamage - self.block
+			if tdamage < 0:
+				tdamage = 0
 
-		#take some damage
-		myBlog.damageTaken = tdamage
-		self.hp -= tdamage
-		myBlog.log =  ( '%s took %g damage (Hp:%g/%g)' % (self.pokename, tdamage, self.hp, self.maxhp))
-		if self.block > 0:
-			myBlog.log += '(%g Blocked)' % self.block
+			#take some damage
+			myBlog.damageTaken = tdamage
+			self.hp -= tdamage
+
+			#Saves who killed it
+			if self.hp < 1:
+				self.slainby = myBlog.attackerOwner
+
+			#Adds the Blocked message
+			myBlog.log =  ( '%s took %g damage (Hp:%g/%g)' % (self.pokename, tdamage, self.hp, self.maxhp))
+			if self.block > 0:
+				myBlog.log += '(%g Blocked)' % self.block
+		else: myBlog.log = 'Fainted'
+
 		return myBlog
+
+	def TriggerDeath(self):
+
+		if self.slainby != 'wild':
+
+			xpList = []
+
+			if self.isNPC == True: killxp = self.killxp
+			else: killxp = random.randint(200,450)
+
+			#starts the XP share!
+			if len(self.fighting) > 1:
+				killstealxp = int(killxp/2)
+			else:
+				killstealxp = killxp
+
+			xpList.append([self.slainby, killstealxp])
+			# pokedex[self.slainby].AddXP(killstealxp)
+
+			Log = "%s gained %g XP " % (self.slainby, killstealxp)
+			self.fighting.remove(self.slainby)
+
+
+
+			if len(self.fighting) > 0:
+				splitxp = int(killxp/(2*len(self.fighting)))
+				for player in self.fighting:
+					
+					# pokedex[player].AddXP(splitxp)
+					xpList.append([player, splitxp])
+					Log += "| %s gained %g XP" % (player, splitxp)
+			
+			myBot.say(Log)
+
+			for player, xp in xpList:
+				pokedex[player].AddXP(xp)
+
 
 	def GetDamage(self):
 		damage = '%gD%g' % (self.weapon)
@@ -350,6 +378,7 @@ class Pokemon(object):
 			else:
 				BotBlueMsg('[NURSE JOY] Successfully revived %s' % (self.pokename))
 				self.hp = self.maxhp
+				self.deathTriggered = False
 				self.revivetime = time.time()
 
 	def Feed(self):
@@ -367,21 +396,79 @@ class Pokemon(object):
 				self.Heal(gainHP)
 				self.time = time.time()
 
+
+
+
+
+
+
+#####################################################################         NPC  Pokemons are defined here            ######################################################################
+
 class NPCPokemon(Pokemon):
+
+	def __init__(self):
+		Pokemon.__init__(self, 'Pokename Not Set', 1)
+		self.isNPC = True
+		self.killxp = 1
+
 
 	def __str__(self):
 		numDice, diceDamage = self.weapon
 		myMsg = '[%s]Hi! I am a level %g pokemon. (HP:%g/%g) (Damage:%gD%g)(Crit:%g, Defense:%g, Evade:%g)(XP value: %g)' % (self.pokename, self.level, self.hp, self.maxhp, numDice, diceDamage, self.crit, self.block, self.evade, self.killxp)
 		return myMsg
 
+	def MakeWild(self):
+		if random.randint(0,100) < 80:
+			self.crit = random.randint(2,30)
+			self.killxp += 50
+		if random.randint(0,100) < 20:
+			self.block = random.randint(2,10)
+			self.killxp += 115
+		if random.randint(0,100) < 20:
+			self.evade = random.randint(20,65)
+			self.killxp += 150
+		if random.randint(0,100) < 15:
+			self.dunkmaster = random.randint(20,70)
+			self.pokename = '[Dunkmaster]' + self.pokename
+			self.killxp *= int(self.killxp * 1.3)
+		if random.randint(0,100) < 20:
+			self.leechseed = random.randint(20,70)
+			self.pokename = '[Leechseed]' + self.pokename
+			self.killxp = int(self.killxp * 1.2)
+
+
+class WildPokemon1(NPCPokemon):
+	def __init__(self, level):
+		NPCPokemon.__init__(self)
+		self.pokename = GenPokeName()
+		self.level = level
+		self.weapon = 2, random.randint(1,15+(self.level))
+		self.maxhp = RollDice(3,(35+self.level))
+		self.hp = self.maxhp
+		self.killxp = random.randint(200,400)
+
+		#Make this pokemon OP
+		self.MakeWild()
+
+
+
+class DragonPokemon(NPCPokemon):
+	def __init__(self, level):
+		NPCPokemon.__init__(self)
+		self.pokename = '[Dragon]' + trigger.nick + 'saur'
+		self.weapon = 3,20
+		self.crit = RollDice(1,30)
+		self.block = RollDice(1,12)
+		self.evade = RollDice(1,12)
+		self.killxp = random.randint(1200,1800)
+		self.MakeWild()
 	
 class BattleLog(object):
 	def __init__(self):
-		BattleLog.log = 'Hello World'
+		BattleLog.log = 'Error: No Log'
 		BattleLog.toDealDamage = 0
 		BattleLog.damageTaken = 0
-
-
+		BattleLog.attackerOwner = 'wild'
 
 
 
@@ -396,6 +483,25 @@ def GenSuffix():
 	chosensuffix = suffixtype[random.randint(0,len(suffixtype)-1)]
 	return chosensuffix
 
+def RollDice(numDice, numHeads, verbose = 0):
+	diceSum = 0
+	for i in range (numDice):
+		diceSum += random.randint(1,numHeads)
+	if verbose == 1:
+		myBot.say ( sopel.formatting.color('[DICE(%gD%g)] I rolled %g' % (numDice, numHeads, diceSum), '02'))
+	return diceSum
+
+
+def SaveGame():
+	pickle.dump(pokedex, open("save.p", "wb"))
+
+def LoadGame():
+	global pokedex
+	pokedex = dict()
+	pokedex = pickle.load(open("save.p", "rb"))
+	myBot.say('game loaded')
+	myBot.say(str(pokedex)) 
+
 
 ###################################################### Battle Logic #################################################
 
@@ -407,7 +513,6 @@ def PokeBattle(poke1, poke2):
 		#time to start fighting
 		battlelog = PokeFight(poke1, poke2)
 
-		time.sleep(1)
 		#Time to do some padding
 		if len(battlelog) > linePadding: linePadding = len(battlelog)+ 3
 		while len(battlelog) < linePadding:
@@ -417,31 +522,39 @@ def PokeBattle(poke1, poke2):
 		#fight but in reverse
 		battlelog += PokeFight(poke2, poke1)
 
-		time.sleep(1)
-
 		myBot.say(battlelog)
+		time.sleep(2)
 
 	#time to determine the winner!
 	if 'deadpokemon' not in locals():
-		if poke2.hp < 0 and poke2.hp < poke1.hp:
+		if poke2.hp < 1 and poke2.hp < poke1.hp:
 			deadpokemon = poke2
 			winnerpokemon = poke1
 		else:
 			deadpokemon = poke1
 			winnerpokemon = poke2
 
-	BotBlueMsg (str(deadpokemon.pokename) + ' has fainted')
 	#give some XP!
 	if winnerpokemon.isNPC == True: winnerpokemon.killxp += 200
 	if winnerpokemon.isNPC == False:
-		if deadpokemon.isNPC == True: winnerpokemon.AddXP(deadpokemon.killxp)
-		else: winnerpokemon.AddXP(random.randint(200,450))
+		# if deadpokemon.isNPC == True: 
+			
+			#Trigger the death of the pokemon!
+			if deadpokemon.deathTriggered == False:
+				deadpokemon.deathTriggered = True
+				BotBlueMsg (str(deadpokemon.pokename) + ' has fainted')
+				deadpokemon.TriggerDeath()
+		# else: 
 
-def PokeFight(poke1, poke2):
-		myBlog = BattleLog()
+			# winnerpokemon.AddXP(random.randint(200,450))
 
-		myBlog.toDealDamage = poke2.GetAttackDamage()
-		myBlog = poke1.TakeDamage(myBlog)
-		poke2.AttackTurn2(myBlog)
+def PokeFight(defender, attacker):
+	# let them fight!
+	myBlog = BattleLog()
+	myBlog.attackerOwner = attacker.owner
 
-		return myBlog.log
+	myBlog.toDealDamage = attacker.GetAttackDamage()
+	myBlog = defender.TakeDamage(myBlog)
+	attacker.AttackTurn2(myBlog)
+
+	return myBlog.log
