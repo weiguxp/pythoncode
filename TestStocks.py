@@ -18,18 +18,22 @@ def getStockPrice(ticker):
 	return TSLAstock['LastTradePrice']
 
 
-def displayStock(ticker):
-	price = getStockPrice('TSLA')
+def printStock(ticker):
+	price = getStockPrice(ticker)
 	output = ticker + " " + price
 	return output
 	
 	
-
-
-while 1 != 0:
+def displayStock(ticker):
 	dispTime = time.strftime("%X")
 	led.draw_text2(0,0,dispTime, 1)
-	stockPrice = displayStock('TSLA')
+	stockPrice = printStock(ticker)
 	led.draw_text2(0,16,stockPrice,2)
 	led.display()	
 	time.sleep(10)
+
+
+
+while 1 != 0:
+	 displayStock('TSLA')
+	 displayStock('MSFT')
