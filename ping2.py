@@ -14,6 +14,7 @@ sentSMS = 0
 SMSpassword = base64.b64encode('123QWEasd')
 
 def sendSMS(targetnumber,errorMSG):
+	global sentSMS
 	#Sends an SMS to target, notifying servers are down
 	if sentSMS < 3:
 		try:
@@ -27,6 +28,7 @@ def sendSMS(targetnumber,errorMSG):
 		return 0
 
 def sendErrorMail(targetmail, mailMsg):
+	global sentEmails
 	#Send an error email using SparkPost
 	if sentEmails < 3:
 		try:

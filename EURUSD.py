@@ -1,10 +1,14 @@
 from googlefinance import getQuotes
 import json
 
-def getStockPrice(ticker):
-	StockPrice = json.dumps(getQuotes(ticker))
-	TSLAstock = json.loads(StockPrice)[0]
-	return TSLAstock['LastTradePrice']
 
 
-print getQuotes('EURUSD')
+sentEmails = 1
+
+def testemails():
+	global sentEmails
+	sentEmails += 1
+	print sentEmails
+
+testemails()
+testemails()
