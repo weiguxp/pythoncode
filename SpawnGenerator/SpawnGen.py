@@ -24,7 +24,7 @@ class SpawnRecord(object):
 
 
 def randomSpawnPoint(spawnlist):
-	spawnpoints = ["-6.7;-0.2;17.9;", "18.1;-0.1;-.60;", "-30.2;4.0;36.3;", "41.7;4.0;-26.7;"]
+	spawnpoints = ["0;0;-60;", "0;0;-60", "60.05;0;0;", "-60.05;0;0;"]
 	chosenspawn = random.choice(spawnlist)
 	return spawnpoints[chosenspawn]
 
