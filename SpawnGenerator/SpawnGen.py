@@ -1,5 +1,6 @@
 import random
 import math
+import spawnAI
 
 spawnList = []
 
@@ -33,7 +34,7 @@ class SpawnRecord(object):
 
 def randomSpawnPoint(spawnlist):
 	#returns the co-ordinates given location in form of a list
-	spawnpoints = ["-15.62;0;8.32;", "9.4;0;-17.7;", "29;2;-27.6;", "-27.7;2.0;26.1;"]
+	spawnpoints = ["A", "B", "C", "D"]
 	chosenspawn = random.choice(spawnlist)
 	return spawnpoints[chosenspawn]
 
@@ -56,38 +57,50 @@ auto_spawnMax = 55
 mergedList = []
 
 def createSpawn(monster, wave, spawnNumber, spawnLocations, spawnMin = auto_spawnMin, spawnMax = auto_spawnMax):
+	spawnList = []
 	
-	numSpawned = 0
-
 	duration = spawnMax - spawnMin
 	numberWaves = 4
-
+	miniWaveMobs = spawnNumber / numberWaves
 	miniWaveDuration = duration / numberWaves
 
-	miniWaveList = []
+
 	for i in range(numberWaves):
-		miniWaveList.append(spawnMin + miniWaveDuration*i)
-
-	spawnList = []
-
-	miniWaveMobs = float(spawnNumber) / (numberWaves * len(spawnLocations))
-	miniWaveMobs = int(math.ceil(miniWaveMobs))
-
-
-	for time in miniWaveList:
-		for spawn in spawnLocations:
-			tempList = []
-			tempList.append(spawn)                                                                                             
-			mySpawn = SpawnRecord(wave, time , randomSpawnPoint(tempList) , monster, miniWaveMobs)
+		miniSpawn = []
+		waveStart = spawnMin + i*miniWaveDuration
+		waveEnd = waveStart + miniWaveDuration
+		miniSpawn = spawnAI.spawnBetween(waveStart, waveEnd, miniWaveMobs)
+		for spawnTime, amount in miniSpawn:
+			if amount == 0: break
+			mySpawn = SpawnRecord(wave, spawnTime , "A" , monster, amount)
 			spawnList.append(mySpawn)
 
-			numSpawned += miniWaveMobs
-			if numSpawned >= spawnNumber: break
-
-		if numSpawned >= spawnNumber: break
-
-
 	return spawnList
+
+
+	# miniWaveList = []
+	# for i in range(numberWaves):
+	# 	miniWaveList.append(spawnMin + miniWaveDuration*i)
+
+	# spawnList = []
+
+	# miniWaveMobs = float(spawnNumber) / (numberWaves * len(spawnLocations))
+	# miniWaveMobs = int(math.ceil(miniWaveMobs))
+
+
+	# for time in miniWaveList:
+	# 	for spawn in spawnLocations:
+	# 		tempList = []
+	# 		tempList.append(spawn)                                                                                             
+	# 		mySpawn = SpawnRecord(wave, time , randomSpawnPoint(tempList) , monster, miniWaveMobs)
+	# 		spawnList.append(mySpawn)
+
+	# 		numSpawned += miniWaveMobs
+	# 		if numSpawned >= spawnNumber: break
+
+	# 	if numSpawned >= spawnNumber: break
+
+	# return spawnList
 
 
 #start editing here
@@ -105,21 +118,19 @@ mergedList = mergedList + createSpawn(skeletonlizard1,3, 20, [0,1], 1)
 mergedList = mergedList + createSpawn(skeletonmage1,3, 15, [0,1], 10)
 mergedList = mergedList + createSpawn(bossbat1,3, 20, [2,3], 10)
 mergedList = mergedList + createSpawn(boss_chiyou,3, 1, [2], 30)
-mergedList = mergedList + createSpawn(dragon_large,3, 1, [1], 30)
 
 mergedList = mergedList + createSpawn(skeleton_footman,4, 40, [0,1,2,3])
 mergedList = mergedList + createSpawn(skeletonlizard1,4, 40, [0,1], 10)
 mergedList = mergedList + createSpawn(skeletonmage1,4, 30, [0,1], 10)
 mergedList = mergedList + createSpawn(bossbat1,4, 20, [2,3], 10)
 mergedList = mergedList + createSpawn(boss_chiyou,4, 10, [0,1], 30)
-mergedList = mergedList + createSpawn(dragon_large,4, 1, [1], 30)
 
 mergedList = mergedList + createSpawn(skeleton_footman,5, 20, [0,1,2,3])
 mergedList = mergedList + createSpawn(skeletonlizard1,5, 40, [0,1], 10)
 mergedList = mergedList + createSpawn(skeletonmage1,5, 30, [0,1], 10)
 mergedList = mergedList + createSpawn(bossbat1,5, 20, [2,3], 10)
 mergedList = mergedList + createSpawn(boss_chiyou,5, 10, [0,1], 30)
-mergedList = mergedList + createSpawn(dragon_large,5, 5, [0,1], 30)
+
 
 
 
