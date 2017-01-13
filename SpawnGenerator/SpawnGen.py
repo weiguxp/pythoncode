@@ -17,6 +17,8 @@ class gameMonster(object):
 		self.drop = int(drop)
 
 
+
+
 class SpawnRecord(object):
 	def __init__(self, waveId, spawnDelay, spawnPosition, monsterName, amount=1):
 		self.waveId = int(waveId)
