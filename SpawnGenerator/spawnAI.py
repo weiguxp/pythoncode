@@ -20,11 +20,12 @@ def roundList(myList, sumTarget):
 			newIntList.append(int(i*ratio))
 		ratio += 0.05
 
+
 	if sum(newIntList) > sumTarget:
-		for i in range(sum(newIntList)):
+		for i in range(len(newIntList)):
 			if newIntList[i] > 0:
 				newIntList[i] -= 1
-				break
+				if sum(newIntList) == sumTarget: break
 
 	return newIntList
 
@@ -57,5 +58,5 @@ def normList(myList, sumTarget):
 	return newList
 
 
-mySpawn = spawnBetween(40,53,10)
+# mySpawn = spawnBetween(42,50,2)
 # print mySpawn
