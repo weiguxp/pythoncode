@@ -29,7 +29,7 @@ class SpawnRecord(object):
 		self.amount = amount
 
 	def __str__(self):
-		return str(self.waveId) + "," + str(self.spawnDelay) + "," + self.spawnPosition + "," + self.monsterName.monsterAsset + "," + str(self.monsterName.speed) + "," + str(self.monsterName.hitPoint) + "," + str(self.monsterName.atk) + "," + str(self.monsterName.attackInterval) + "," + str(self.monsterName.attackRange) + "," + str(self.monsterName.visionRange) + "," + self.monsterName.aiBehaviour + "," + str(self.monsterName.drop) + "," + str(self.amount)
+		return str(self.waveId) + "," + str(self.spawnDelay) + "," + self.monsterName.monsterAsset + "," + self.spawnPosition + "," + str(self.amount)
 
 
 def randomSpawnPoint(spawnlist):
@@ -57,6 +57,8 @@ auto_spawnMax = 55
 mergedList = []
 
 def createSpawn(monster, wave, spawnNumber, spawnLocations, spawnMin = auto_spawnMin, spawnMax = auto_spawnMax):
+	# Divides up the spawn into MiniWaves
+	#spawns the appropriate number
 	spawnList = []
 	
 	duration = spawnMax - spawnMin
@@ -64,72 +66,53 @@ def createSpawn(monster, wave, spawnNumber, spawnLocations, spawnMin = auto_spaw
 	miniWaveMobs = spawnNumber / numberWaves
 	miniWaveDuration = duration / numberWaves
 
-
 	for i in range(numberWaves):
 		miniSpawn = []
 		waveStart = spawnMin + i*miniWaveDuration
 		waveEnd = waveStart + miniWaveDuration
+
 		miniSpawn = spawnAI.spawnBetween(waveStart, waveEnd, miniWaveMobs)
+
+		# totalSpawned = 0
 		for spawnTime, amount in miniSpawn:
-			if amount == 0: break
-			mySpawn = SpawnRecord(wave, spawnTime , "A" , monster, amount)
-			spawnList.append(mySpawn)
+			if amount > 0:
+				mySpawn = SpawnRecord(wave, spawnTime , spawnLocations , monster, amount)
+				spawnList.append(mySpawn)
+		# 		totalSpawned += amount
+		# print totalSpawned
+
 
 	return spawnList
 
 
-	# miniWaveList = []
-	# for i in range(numberWaves):
-	# 	miniWaveList.append(spawnMin + miniWaveDuration*i)
-
-	# spawnList = []
-
-	# miniWaveMobs = float(spawnNumber) / (numberWaves * len(spawnLocations))
-	# miniWaveMobs = int(math.ceil(miniWaveMobs))
-
-
-	# for time in miniWaveList:
-	# 	for spawn in spawnLocations:
-	# 		tempList = []
-	# 		tempList.append(spawn)                                                                                             
-	# 		mySpawn = SpawnRecord(wave, time , randomSpawnPoint(tempList) , monster, miniWaveMobs)
-	# 		spawnList.append(mySpawn)
-
-	# 		numSpawned += miniWaveMobs
-	# 		if numSpawned >= spawnNumber: break
-
-	# 	if numSpawned >= spawnNumber: break
-
-	# return spawnList
-
 
 #start editing here
 # monster, wave, number, spawn location(as list), min time, max time
-mergedList = mergedList + createSpawn(skeleton_footman	,1, 40, [0,1])
-mergedList = mergedList + createSpawn(boss_chiyou		,1, 1, [0,1], 20,20)
+mergedList = mergedList + createSpawn(skeleton_footman	,1, 40, "B")
+mergedList = mergedList + createSpawn(skeleton_footman	,1, 40, "C")
 
-mergedList = mergedList + createSpawn(skeleton_footman	,2, 60, [0,1,2,3])
-mergedList = mergedList + createSpawn(skeletonlizard1	,2, 10, [0,1], 10)
-mergedList = mergedList + createSpawn(bossbat1			,2, 5, [2,3], 10)
-mergedList = mergedList + createSpawn(boss_chiyou		,2, 2, [0,1], 15,20)
+# mergedList = mergedList + createSpawn(skeleton_footman	,2, 60, [0,1,2,3])
+# mergedList = mergedList + createSpawn(skeletonlizard1	,2, 10, [0,1], 10)
+# mergedList = mergedList + createSpawn(bossbat1			,2, 5, [2,3], 10)
+# mergedList = mergedList + createSpawn(boss_chiyou		,2, 2, [0,1], 15,20)
 
-mergedList = mergedList + createSpawn(skeleton_footman,3, 60, [0,1,2,3])
-mergedList = mergedList + createSpawn(skeletonlizard1,3, 20, [0,1], 1)
-mergedList = mergedList + createSpawn(skeletonmage1,3, 15, [0,1], 10)
-mergedList = mergedList + createSpawn(bossbat1,3, 20, [2,3], 10)
-mergedList = mergedList + createSpawn(boss_chiyou,3, 1, [2], 30)
+# mergedList = mergedList + createSpawn(skeleton_footman,3, 60, [0,1,2,3])
+# mergedList = mergedList + createSpawn(skeletonlizard1,3, 20, [0,1], 1)
+# mergedList = mergedList + createSpawn(skeletonmage1,3, 15, [0,1], 10)
+# mergedList = mergedList + createSpawn(bossbat1,3, 20, [2,3], 10)
+# mergedList = mergedList + createSpawn(boss_chiyou,3, 1, [2], 30)
 
-mergedList = mergedList + createSpawn(skeleton_footman,4, 40, [0,1,2,3])
-mergedList = mergedList + createSpawn(skeletonlizard1,4, 40, [0,1], 10)
-mergedList = mergedList + createSpawn(skeletonmage1,4, 30, [0,1], 10)
-mergedList = mergedList + createSpawn(bossbat1,4, 20, [2,3], 10)
-mergedList = mergedList + createSpawn(boss_chiyou,4, 10, [0,1], 30)
+# mergedList = mergedList + createSpawn(skeleton_footman,4, 40, [0,1,2,3])
+# mergedList = mergedList + createSpawn(skeletonlizard1,4, 40, [0,1], 10)
+# mergedList = mergedList + createSpawn(skeletonmage1,4, 30, [0,1], 10)
+# mergedList = mergedList + createSpawn(bossbat1,4, 20, [2,3], 10)
+# mergedList = mergedList + createSpawn(boss_chiyou,4, 10, [0,1], 30)
 
-mergedList = mergedList + createSpawn(skeleton_footman,5, 20, [0,1,2,3])
-mergedList = mergedList + createSpawn(skeletonlizard1,5, 40, [0,1], 10)
-mergedList = mergedList + createSpawn(skeletonmage1,5, 30, [0,1], 10)
-mergedList = mergedList + createSpawn(bossbat1,5, 20, [2,3], 10)
-mergedList = mergedList + createSpawn(boss_chiyou,5, 10, [0,1], 30)
+# mergedList = mergedList + createSpawn(skeleton_footman,5, 20, [0,1,2,3])
+# mergedList = mergedList + createSpawn(skeletonlizard1,5, 40, [0,1], 10)
+# mergedList = mergedList + createSpawn(skeletonmage1,5, 30, [0,1], 10)
+# mergedList = mergedList + createSpawn(bossbat1,5, 20, [2,3], 10)
+# mergedList = mergedList + createSpawn(boss_chiyou,5, 10, [0,1], 30)
 
 
 

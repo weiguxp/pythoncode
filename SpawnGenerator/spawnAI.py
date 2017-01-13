@@ -20,12 +20,18 @@ def roundList(myList, sumTarget):
 			newIntList.append(int(i*ratio))
 		ratio += 0.05
 
+	if sum(newIntList) > sumTarget:
+		for i in range(sum(newIntList)):
+			if newIntList[i] > 0:
+				newIntList[i] -= 1
+				break
+
 	return newIntList
 
 def spawnBetween(tMin, tMax, sumTarget):
 	#generates a list between two times
 	tAverage = (float(tMin) + tMax) / 2
-	tStdDev = tAverage /2
+	tStdDev = (tMax - tMin) /4
 	myList = []
 	for i in range(tMin, tMax +1 ):
 		# print str(i) + " , " + str(normpdf(i,tAverage,tStdDev))
@@ -51,6 +57,5 @@ def normList(myList, sumTarget):
 	return newList
 
 
-# mySpawn = spawnBetween(1,10,30)
+mySpawn = spawnBetween(40,53,10)
 # print mySpawn
-# print sum(mySpawn)
